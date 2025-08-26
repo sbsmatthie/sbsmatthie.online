@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="description" content="Independent agent page for Deriv services and private bot access request." />
+  <title>Deriv Services • Independent Agent</title>
+  <style>
+    :root {
+      --bg: #0b0d10;
+      --card: #12161c;
+      --muted: #9aa4af;
+      --text: #e9eef5;
+      --brand: #1e90ff; /* DodgerBlue */
+      --accent: #22c55e; /* green */
+      --ring: rgba(30, 144, 255, 0.35);
+      --shadow: 0 10px 30px rgba(0,0,0,0.35);
+      --radius: 18px;
+    }
+    @media (prefers-color-scheme: light) {
+      :root {
+        --bg: #f6f8fb;
+        --card: #ffffff;
+        --muted: #52606d;
+        --text: #0d1117;
+        --ring: rgba(30, 144, 255, 0.25);
+        --shadow: 0 10px 25px rgba(0,0,0,0.08);
+      }
+    }
+    * { box-sizing: border-box; }
+    html, body { height: 100%; }
+    body {
+      margin: 0;
+      font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, "Helvetica Neue", Noto Sans, Arial, "Apple Color Emoji", "Segoe UI Emoji";
+      color: var(--text);
+      background: radial-gradient(1200px 600px at 10% -10%, rgba(30,144,255,0.14), transparent 60%),
+                  radial-gradient(900px 500px at 100% 0%, rgba(34,197,94,0.08), transparent 60%),
+                  var(--bg);
+      line-height: 1.55;
+    }
+    a { color: var(--brand); text-decoration: none; }
+    a:hover { text-decoration: underline; }
+
+    /* Layout */
+    .container { max-width: 1100px; margin: 0 auto; padding: 24px; }
+    header {
+      position: sticky; top: 0; z-index: 50;
+      backdrop-filter: blur(8px);
+      background: color-mix(in oklab, var(--bg) 86%, transparent);
+      border-bottom: 1px solid color-mix(in oklab, var(--text) 12%, transparent);
+    }
+    .nav {
+      display: flex; align-items: center; justify-content: space-between; gap: 16px;
+      padding: 14px 0;
+    }
+    .brand { display: flex; align-items: center; gap: 10px; font-weight: 800; letter-spacing: 0.2px; }
+    .brand .logo {
+      width: 36px; height: 36px; border-radius: 10px;
+      background: linear-gradient(135deg, var(--brand), #80c7ff);
+      box-shadow: 0 6px 18px var(--ring);
+    }
+    .brand span { font-size: 1.05rem; }
+    nav a { padding: 8px 10px; border-radius: 10px; }
+    nav a:hover { background: color-mix(in oklab, var(--card) 70%, transparent); text-decoration: none; }
+
+    .cta {
+      display: inline-flex; align-items: center; gap: 10px; padding: 10px 16px; border-radius: 999px;
+      background: linear-gradient(180deg, var(--brand), #1676d4);
+      color: white; box-shadow: 0 8px 20px var(--ring); border: none; cursor: pointer; font-weight: 700;
+    }
+    .cta:focus { outline: 3px solid var(--ring); outline-offset: 2px; }
+
+    /* Hero */
+    .hero { padding: 40px 0 24px; display: grid; gap: 20px; align-items: center; grid-template-columns: 1.2fr; }
+    @media (min-width: 900px) { .hero { grid-template-columns: 1.1fr 0.9fr; } }
+    .h-title { font-size: clamp(1.8rem, 1.2rem + 2.5vw, 3rem); margin: 0 0 6px; }
+    .h-sub { color: var(--muted); margin: 0 0 18px; }
+    .hero-card {
+      background: linear-gradient(180deg, color-mix(in oklab, var(--card) 90%, transparent), color-mix(in oklab, var(--card) 98%, transparent));
+      border: 1px solid color-mix(in oklab, var(--text) 10%, transparent);
+      padding: 20px; border-radius: var(--radius); box-shadow: var(--shadow);
+    }
+
+    /* Badges */
+    .badge-row { display: flex; flex-wrap: wrap; gap: 10px; }
+    .badge { font-size: 0.8rem; color: var(--muted); border: 1px dashed color-mix(in oklab, var(--text) 13%, transparent); padding: 6px 10px; border-radius: 999px; }
+
+    /* Cards */
+    .grid { display: grid; gap: 16px; grid-template-columns: repeat(1, minmax(0, 1fr)); }
+    @media (min-width: 700px){ .grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+    @media (min-width: 1000px){ .grid { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+    .card {
+      background: linear-gradient(180deg, color-mix(in oklab, var(--card) 92%, transparent), color-mix(in oklab, var(--card) 98%, transparent));
+      border: 1px solid color-mix(in oklab, var(--text) 10%, transparent);
+      padding: 18px; border-radius: var(--radius); box-shadow: var(--shadow); transition: transform .18s ease, box-shadow .18s ease;
+    }
+    .card:hover { transform: translateY(-4px); box-shadow: 0 12px 28px rgba(0,0,0,0.18); }
+    .card h3 { margin: 0 0 8px; font-size: 1.05rem; }
+    .card p { margin: 0; color: var(--muted); font-size: 0.98rem; }
+
+    /* Section heads */
+    .section { padding: 32px 0; }
+    .section h2 { font-size: clamp(1.2rem, 0.8rem + 1.8vw, 2rem); margin: 0 0 10px; }
+    .muted { color: var(--muted); }
+
+    /* Callout */
+    .callout {
+      display: grid; gap: 12px; grid-template-columns: 1fr; align-items: center; padding: 18px; border-radius: var(--radius);
+      border: 1px solid color-mix(in oklab, var(--text) 12%, transparent);
+      background: linear-gradient(180deg, color-mix(in oklab, var(--card) 80%, transparent), color-mix(in oklab, var(--card) 98%, transparent));
+      box-shadow: var(--shadow);
+    }
+    @media (min-width: 900px){ .callout { grid-template-columns: 1fr auto; } }
+
+    .pill { display: inline-flex; align-items: center; gap: 8px; padding: 6px 10px; font-size: .9rem; border-radius: 999px; background: color-mix(in oklab, var(--brand) 16%, transparent); color: var(--text); }
+
+    /* Footer */
+    footer { border-top: 1px solid color-mix(in oklab, var(--text) 12%, transparent); margin-top: 26px; }
+    .ft { display: grid; gap: 14px; grid-template-columns: 1fr; padding: 20px 0; color: var(--muted); font-size: 0.95rem; }
+    @media (min-width: 900px) { .ft { grid-template-columns: 1fr auto; align-items: center; } }
+
+    /* Buttons */
+    .btn { padding: 10px 14px; border-radius: 12px; border: 1px solid color-mix(in oklab, var(--text) 12%, transparent); background: var(--card); color: var(--text); cursor: pointer; font-weight: 600; }
+    .btn:hover { background: color-mix(in oklab, var(--card) 75%, transparent); }
+    .btn:focus { outline: 3px solid var(--ring); outline-offset: 2px; }
+
+    /* Modal */
+    dialog { border: none; padding: 0; border-radius: 16px; max-width: 780px; width: calc(100vw - 40px); box-shadow: var(--shadow); background: var(--card); color: var(--text); }
+    dialog::backdrop { background: rgba(0,0,0,0.55); }
+    .modal-head { display: flex; align-items: center; justify-content: space-between; padding: 14px 16px; border-bottom: 1px solid color-mix(in oklab, var(--text) 12%, transparent); }
+    .modal-body { padding: 16px; color: var(--muted); }
+    .modal-actions { display: flex; justify-content: flex-end; gap: 10px; padding: 12px 16px 16px; }
+
+    /* Small helpers */
+    .row { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+    .spacer { height: 10px; }
+    .nowrap { white-space: nowrap; }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="container nav">
+      <div class="brand" aria-label="Brand">
+        <div class="logo" aria-hidden="true"></div>
+        <span>Independent Agent • For Deriv®</span>
+      </div>
+      <nav class="row" aria-label="Primary">
+        <a href="#services">Services</a>
+        <a href="#bots">Bot Access</a>
+        <button class="btn" id="riskBtn" type="button" aria-haspopup="dialog" aria-controls="riskModal">Risk warning</button>
+        <a class="cta" href="https://deriv.com" target="_blank" rel="noopener">Go to deriv.com →</a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="container">
+    <!-- HERO -->
+    <section class="hero">
+      <div>
+        <h1 class="h-title">Explore Deriv services with guidance from an independent agent</h1>
+        <p class="h-sub">We are <strong>not Deriv</strong>. We are an independent agent introducing clients to Deriv and answering basic questions. Access to our private trading bots for use on Deriv is <strong>subject to approval</strong>.</p>
+        <div class="badge-row" role="list">
+          <span class="badge" role="listitem">CFDs & options</span>
+          <span class="badge" role="listitem">Deriv platforms</span>
+          <span class="badge" role="listitem">Private bots (by approval)</span>
+          <span class="badge" role="listitem">General guidance</span>
+        </div>
+        <div class="spacer"></div>
+        <div class="row">
+          <a class="cta" href="#bots">Request bot access</a>
+          <button class="btn" id="riskBtn2" type="button" aria-haspopup="dialog" aria-controls="riskModal">View risk warning</button>
+        </div>
+      </div>
+      <div class="hero-card" aria-label="Overview">
+        <h3 style="margin:0 0 8px">What you can do here</h3>
+        <ul class="muted" style="margin:0 0 0 18px; padding:0;">
+          <li>Learn about Deriv's offerings and visit their official site.</li>
+          <li>Understand our role as an independent agent (not Deriv).</li>
+          <li>Request approval to use our private Deriv-compatible bots.</li>
+          <li>Read the important risk warning before you trade.</li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- SERVICES -->
+    <section id="services" class="section">
+      <h2>Deriv services (overview)</h2>
+      <p class="muted">Deriv offers complex derivatives — including options and contracts for difference (CFDs) — available through their own platforms. For full and current details, please visit <a href="https://deriv.com" target="_blank" rel="noopener">deriv.com</a>.</p>
+      <div class="grid" role="list">
+        <article class="card" role="listitem">
+          <h3>Options</h3>
+          <p>Speculate on markets with predefined outcomes and durations. Payouts and risk profiles vary by contract type.</p>
+        </article>
+        <article class="card" role="listitem">
+          <h3>CFDs</h3>
+          <p>Trade price movements of various instruments using leverage. Be aware that leverage amplifies both gains and losses.</p>
+        </article>
+        <article class="card" role="listitem">
+          <h3>Trading platforms</h3>
+          <p>Deriv provides multiple platforms and interfaces for manual and automated trading. See the latest options on their site.</p>
+        </article>
+        <article class="card" role="listitem">
+          <h3>Automated strategies</h3>
+          <p>Some Deriv platforms enable rule-based execution. Our own bots are separate and require approval (see below).</p>
+        </article>
+        <article class="card" role="listitem">
+          <h3>Education & resources</h3>
+          <p>Deriv publishes learning materials and help docs. Always ensure you fully understand the products before trading.</p>
+        </article>
+        <article class="card" role="listitem">
+          <h3>Support</h3>
+          <p>For account-specific issues or onboarding, contact <a href="https://deriv.com" target="_blank" rel="noopener">Deriv support</a> directly.</p>
+        </article>
+      </div>
+    </section>
+
+    <!-- BOTS ACCESS -->
+    <section id="bots" class="section">
+      <div class="callout">
+        <div>
+          <h2 style="margin:0 0 6px">Private bot access (subject to approval)</h2>
+          <p class="muted" style="margin:0">Our Deriv-compatible bots are <strong>private tools</strong>. To request access, email us with your Deriv account ID and a brief note on your experience. We review each request individually.</p>
+          <div class="spacer"></div>
+          <div class="pill" aria-label="Status">
+            <span aria-hidden="true">🔐</span>
+            Access is restricted and granted on a case-by-case basis
+          </div>
+        </div>
+        <div class="row">
+          <a class="cta nowrap" href="mailto:mtthmatthie@gmail.com?subject=Access%20Request%20for%20Deriv%20Bots&body=Hello%2C%0A%0AI%20would%20like%20to%20request%20access%20to%20your%20private%20Deriv-compatible%20bots.%0A%0AMy%20Deriv%20account%20ID%3A%20__________%0AExperience%20level%3A%20Beginner%2FIntermediate%2FAdvanced%0AReason%20for%20request%3A%20__________%0A%0ABy%20emailing%20this%20request%2C%20I%20acknowledge%20the%20associated%20risks%20of%20trading.%0A%0AThanks!" rel="noopener">Email request ↗</a>
+          <button class="btn" type="button" id="riskBtn3" aria-haspopup="dialog" aria-controls="riskModal">Read risks first</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- EXTRA DISCLAIMER -->
+    <section class="section">
+      <div class="card">
+        <h3 style="margin:0 0 6px">Important disclosures</h3>
+        <ul class="muted" style="margin:0 0 0 18px; padding:0;">
+          <li>We are an <strong>independent agent</strong> and not affiliated with, endorsed by, or a representative of Deriv.</li>
+          <li>Nothing on this page is financial advice. Trading involves risk.</li>
+          <li>All trademarks belong to their respective owners.</li>
+        </ul>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <div class="container ft">
+      <div>
+        © <span id="year"></span> Independent Agent for Deriv. All rights reserved.
+      </div>
+      <div class="row">
+        <button class="btn" id="riskBtn4" type="button" aria-haspopup="dialog" aria-controls="riskModal">Risk warning</button>
+        <a class="btn" href="https://deriv.com" target="_blank" rel="noopener">Visit deriv.com</a>
+      </div>
+    </div>
+  </footer>
+
+  <!-- RISK MODAL -->
+  <dialog id="riskModal" aria-labelledby="riskTitle" aria-describedby="riskBody">
+    <div class="modal-head">
+      <h3 id="riskTitle" style="margin:0">Risk warning</h3>
+      <button class="btn" type="button" id="closeRisk" aria-label="Close risk dialog">Close</button>
+    </div>
+    <div class="modal-body" id="riskBody">
+      <p><strong>Deriv offers complex derivatives, such as options and contracts for difference (“CFDs”).</strong> These products may not be suitable for all clients, and trading them puts you at risk. Please make sure that you understand the following risks before trading Deriv products:</p>
+      <ol>
+        <li>You may lose some or all of the money you invest in the trade.</li>
+        <li>If your trade involves currency conversion, exchange rates will affect your profit and loss.</li>
+      </ol>
+      <p>You should never trade with borrowed money or with money that you cannot afford to lose.</p>
+    </div>
+    <div class="modal-actions">
+      <button class="btn" type="button" id="ackRisk">I understand</button>
+    </div>
+  </dialog>
+
+  <script>
+    // Year
+    document.getElementById('year').textContent = new Date().getFullYear();
+
+    // Modal controls (use native <dialog>)
+    const riskModal = document.getElementById('riskModal');
+    const openers = [
+      document.getElementById('riskBtn'),
+      document.getElementById('riskBtn2'),
+      document.getElementById('riskBtn3'),
+      document.getElementById('riskBtn4')
+    ].filter(Boolean);
+
+    const closeBtn = document.getElementById('closeRisk');
+    const ackBtn = document.getElementById('ackRisk');
+
+    openers.forEach(btn => btn.addEventListener('click', () => riskModal.showModal()));
+    closeBtn.addEventListener('click', () => riskModal.close());
+    ackBtn.addEventListener('click', () => riskModal.close());
+
+    // Close on outside click
+    riskModal.addEventListener('click', (e) => {
+      const rect = riskModal.getBoundingClientRect();
+      const inDialog = (
+        rect.top <= e.clientY && e.clientY <= rect.top + rect.height &&
+        rect.left <= e.clientX && e.clientX <= rect.left + rect.width
+      );
+      if (!inDialog) riskModal.close();
+    });
+
+    // Smooth anchor scroll
+    document.querySelectorAll('a[href^="#"]').forEach(a => {
+      a.addEventListener('click', (e) => {
+        const id = a.getAttribute('href').slice(1);
+        const el = document.getElementById(id);
+        if (el) {
+          e.preventDefault();
+          el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+      });
+    });
+  </script>
+</body>
+</html>
