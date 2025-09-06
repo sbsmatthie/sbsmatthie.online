@@ -48,7 +48,7 @@
   </style>
 </head>
 <body>
-  <header>Financial Dashboard</header>
+  <header>SBS</header>
 
   <div class="container">
     <div class="cards">
@@ -295,9 +295,18 @@
         },
         options: {
           responsive: true,
+          layout: { padding: { top: 40 } }, // extra top padding so labels fit
           plugins: {
             legend: { display: false },
-            datalabels: { anchor: 'end', align: 'end', color: '#111827', font: { weight: 'bold' }, formatter: (val) => val }
+            datalabels: {
+              anchor: 'end',
+              align: 'top',
+              clamp: true,
+              clip: false,
+              color: '#111827',
+              font: { weight: 'bold' },
+              formatter: (val) => val
+            }
           },
           scales: { y: { display: false, beginAtZero: true } }
         },
