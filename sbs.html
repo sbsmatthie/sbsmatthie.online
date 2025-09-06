@@ -126,7 +126,7 @@
 </head>
 <body>
   <header>
-    Financial Dashboard
+    SBS
   </header>
 
   <div class="container">
@@ -400,7 +400,9 @@
               formatter: (val) => val
             }
           },
-          scales: { y: { beginAtZero: true } }
+          scales: {
+            y: { display: false, beginAtZero: true }
+          }
         },
         plugins: [ChartDataLabels]
       });
