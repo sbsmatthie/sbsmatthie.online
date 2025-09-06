@@ -145,8 +145,8 @@
     <div class="filters">
       <label>From: <input type="text" placeholder="dd-mm-yyyy hh:mm"></label>
       <label>To: <input type="text" placeholder="dd-mm-yyyy hh:mm"></label>
-      <button>Load</button>
-      <button>Connect</button>
+      <button id="loadBtn">Load</button>
+      <button id="connectBtn">Connect</button>
       <span id="wsStatus" class="status disconnected">Disconnected</span>
     </div>
 
@@ -157,6 +157,7 @@
   <script>
     const token = "4SPwnIvTNnbKZJU";
     const wsStatus = document.getElementById('wsStatus');
+    const connectBtn = document.getElementById('connectBtn');
 
     var date_from = "2024-01-01 00:00:00";
     var date_to = "2090-01-01 00:00:00";
@@ -171,110 +172,123 @@
     let values = [];
     let pendingMonths = [];
 
-    // Connect to WebSocket when page loads
-    const ws = new WebSocket('wss://ws.binaryws.com/websockets/v3?app_id=97811');
-    ws.onopen = () => {
-      console.log('WebSocket connected');
-      wsStatus.textContent = 'Connected';
-      wsStatus.classList.remove('disconnected');
-      wsStatus.classList.add('connected');
+    let ws;
 
-      total_balance = 0;
-      total_stake = 0;
-      total_running = 0;
-      total_profit = 0;
-      months = [];
-      values = [];
-      pendingMonths = [];
-
-      authorize();
-    };
-    ws.onmessage = (msg) => {
-      let ms = JSON.parse(msg.data);
-      let req = ms.echo_req;
-      var req_id = req.req_id;
-
-      var error = ms.error;
-      if (error) {
-          alert(error);
-          console.log(error);
+    function connectWS() {
+      if (ws && ws.readyState === WebSocket.OPEN) {
+        console.log("Already connected");
+        return;
       }
-      else {
-          if (req_id === 1111) {
-              theBalance();
-              markUp();
-              openContracts();
-              profitTable();
-              fetchLast12Months();
-          }
-          if (req_id === 1000) {
-              const b = ms.balance;
-              const balance = b.balance;
-              const currency = b.currency;
-              total_balance = total_stake + balance;
+      ws = new WebSocket('wss://ws.binaryws.com/websockets/v3?app_id=97811');
+
+      ws.onopen = () => {
+        console.log('WebSocket connected');
+        wsStatus.textContent = 'Connected';
+        wsStatus.classList.remove('disconnected');
+        wsStatus.classList.add('connected');
+
+        total_balance = 0;
+        total_stake = 0;
+        total_running = 0;
+        total_profit = 0;
+        months = [];
+        values = [];
+        pendingMonths = [];
+
+        authorize();
+      };
+
+      ws.onmessage = (msg) => {
+        let ms = JSON.parse(msg.data);
+        let req = ms.echo_req;
+        var req_id = req.req_id;
+
+        var error = ms.error;
+        if (error) {
+            alert(error);
+            console.log(error);
+        }
+        else {
+            if (req_id === 1111) {
+                theBalance();
+                markUp();
+                openContracts();
+                profitTable();
+                fetchLast12Months();
+            }
+            if (req_id === 1000) {
+                const b = ms.balance;
+                const balance = b.balance;
+                const currency = b.currency;
+                total_balance = total_stake + balance;
+                document.getElementById('balance').textContent = total_balance.toFixed(2) + ' ' + currency;
+            }
+            if (req_id === 1005) {
+                const con = ms.profit_table;
+                const trans = con.transactions;
+                const count = con.count;
+                var won = 0;
+                for (var i = 0; i < trans.length; i++) {
+                    var a = trans[i];
+                    var buy_price = a.buy_price;
+                    var sell_price = a.sell_price;
+                    var pro = sell_price - buy_price;
+                    total_profit += pro;
+                    if (pro > 0) {
+                        won ++;
+                    }
+                }
+                document.getElementById('profit').textContent = '$' + total_profit.toFixed(2);
+                const rate = won * 100 / count;
+                document.getElementById('rate').textContent = rate.toFixed(0) + '%';
+                document.getElementById('count').textContent = count;
+            }
+            if (req_id === 1006) {
+                const app = ms.app_markup_statistics;
+                const total = app.total_app_markup_usd;
+                const trans = app.total_transactions_count;
+                document.getElementById('markup').textContent = '$' + total.toFixed(2);
+                document.getElementById('transactions').textContent = trans;
+            }
+
+            if (req_id === 1007) {
+              const open = ms.proposal_open_contract;
+              const stake = open.buy_price;
+              const currency = open.currency;
+              const bid_price = open.bid_price;
+              total_running += bid_price;
+              total_stake += stake;
+              total_balance += stake;
               document.getElementById('balance').textContent = total_balance.toFixed(2) + ' ' + currency;
-          }
-          if (req_id === 1005) {
-              const con = ms.profit_table;
-              const trans = con.transactions;
-              const count = con.count;
-              var won = 0;
-              for (var i = 0; i < trans.length; i++) {
-                  var a = trans[i];
-                  var buy_price = a.buy_price;
-                  var sell_price = a.sell_price;
-                  var pro = sell_price - buy_price;
-                  total_profit += pro;
-                  if (pro > 0) {
-                      won ++;
-                  }
-              }
-              document.getElementById('profit').textContent = '$' + total_profit.toFixed(2);
-              const rate = won * 100 / count;
-              document.getElementById('rate').textContent = rate.toFixed(0) + '%';
-              document.getElementById('count').textContent = count;
-          }
-          if (req_id === 1006) {
-              const app = ms.app_markup_statistics;
-              const total = app.total_app_markup_usd;
-              const trans = app.total_transactions_count;
-              document.getElementById('markup').textContent = '$' + total.toFixed(2);
-              document.getElementById('transactions').textContent = trans;
-          }
+              document.getElementById('running').textContent = total_running.toFixed(2) + ' ' + currency;
+            }
 
-          if (req_id === 1007) {
-            const open = ms.proposal_open_contract;
-            const stake = open.buy_price;
-            const currency = open.currency;
-            const bid_price = open.bid_price;
-            total_running += bid_price;
-            total_stake += stake;
-            total_balance += stake;
-            document.getElementById('balance').textContent = total_balance.toFixed(2) + ' ' + currency;
-            document.getElementById('running').textContent = total_running.toFixed(2) + ' ' + currency;
-          }
+            if (req_id === 1008) {
+                const app = ms.app_markup_statistics;
+                var total = app.total_app_markup_usd;
+                const trans = app.total_transactions_count;
+                if (total) {
+                  total = total.toFixed(0);
+                }
+                values.push(total);
+                requestNextMonth();
+            }
+        }
+      };
 
-          if (req_id === 1008) {
-              const app = ms.app_markup_statistics;
-              var total = app.total_app_markup_usd;
-              const trans = app.total_transactions_count;
-              if (total) {
-                total = total.toFixed(0);
-              }
-              values.push(total);
-              requestNextMonth();
-          }
-      }
-    };
-    ws.onerror = (err) => {
-      console.error('WebSocket error:', err);
-    };
-    ws.onclose = () => {
-      console.log('WebSocket closed');
-      wsStatus.textContent = 'Disconnected';
-      wsStatus.classList.remove('connected');
-      wsStatus.classList.add('disconnected');
-    };
+      ws.onerror = (err) => {
+        console.error('WebSocket error:', err);
+      };
+      ws.onclose = () => {
+        console.log('WebSocket closed');
+        wsStatus.textContent = 'Disconnected';
+        wsStatus.classList.remove('connected');
+        wsStatus.classList.add('disconnected');
+      };
+    }
+
+    connectWS();
+    connectBtn.addEventListener('click', connectWS);
 
     function authorize() {
         const msg = JSON.stringify({
@@ -358,7 +372,6 @@
         req_id: 1008
       }));
       months.push(d.toLocaleString('default', { month: 'short', year: '2-digit' }));
-        console.log(from, to)
     }
     
     function updateChart(months, values) {
@@ -392,58 +405,6 @@
         plugins: [ChartDataLabels]
       });
     }
-
-
-
-    // const ctx = document.getElementById('barChart').getContext('2d');
-    
-    // // Fixed demo data for last 12 months
-    // const months = [
-    //   'Sep-24','Oct-24','Nov-24','Dec-24','Jan-25','Feb-25','Mar-25','Apr-25','May-25','Jun-25','Jul-25','Aug-25'
-    // ];
-    // const values = [1200, 2500, 1800, 3000, 2200, 2700, 3500, 2000, 4000, 3200, 2800, 3600];
-
-    // new Chart(ctx, {
-    //   type: 'bar',
-    //   data: {
-    //     labels: months,
-    //     datasets: [{
-    //       label: 'Monthly Value',
-    //       data: values,
-    //       backgroundColor: 'rgba(37, 99, 235, 0.8)',
-    //       borderRadius: 6,
-    //       hoverBackgroundColor: 'rgba(29, 78, 216, 0.9)',
-    //     }]
-    //   },
-    //   options: {
-    //     responsive: true,
-    //     animation: {
-    //       duration: 1200,
-    //       easing: 'easeOutCubic'
-    //     },
-    //     plugins: {
-    //       legend: { display: false },
-    //       tooltip: { enabled: true },
-    //       datalabels: {
-    //         anchor: 'end',
-    //         align: 'end',
-    //         color: '#111827',
-    //         font: { weight: 'bold' },
-    //         formatter: (val) => val
-    //       }
-    //     },
-    //     scales: {
-    //       y: {
-    //         beginAtZero: true,
-    //         grid: { color: '#e5e7eb' }
-    //       },
-    //       x: {
-    //         grid: { color: '#f1f5f9' }
-    //       }
-    //     }
-    //   },
-    //   plugins: [ChartDataLabels]
-    // });
   </script>
 </body>
 </html>
