@@ -1,0 +1,449 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dashboard</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels"></script>
+  <style>
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      margin: 0;
+      padding: 0;
+      background: linear-gradient(135deg, #f0f4f8, #e2e8f0);
+      color: #333;
+    }
+    header {
+      padding: 1rem;
+      background: linear-gradient(90deg, #2563eb, #1e3a8a);
+      color: #fff;
+      text-align: center;
+      font-size: 1.6rem;
+      font-weight: bold;
+      letter-spacing: 1px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+      animation: fadeDown 1s ease;
+    }
+    @keyframes fadeDown {
+      from {opacity: 0; transform: translateY(-20px);}
+      to {opacity: 1; transform: translateY(0);}
+    }
+    .container {
+      max-width: 1200px;
+      margin: auto;
+      padding: 1rem;
+    }
+    .cards {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+      gap: 1rem;
+      margin-bottom: 1.5rem;
+    }
+    .card {
+      background: #fff;
+      border-radius: 12px;
+      padding: 0.8rem;
+      box-shadow: 0 3px 8px rgba(0,0,0,0.1);
+      text-align: center;
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+      animation: fadeUp 1s ease;
+    }
+    .card:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 6px 16px rgba(0,0,0,0.15);
+    }
+    .card h3 {
+      margin: 0;
+      color: #2563eb;
+      font-size: 1rem;
+    }
+    .card p {
+      margin: 0.4rem 0 0;
+      font-size: 1.1rem;
+      font-weight: bold;
+      color: #111827;
+    }
+    @keyframes fadeUp {
+      from {opacity: 0; transform: translateY(20px);}
+      to {opacity: 1; transform: translateY(0);}
+    }
+    .filters {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.6rem;
+      margin-bottom: 1.5rem;
+      align-items: center;
+      animation: fadeUp 1.2s ease;
+    }
+    .filters input, .filters button {
+      padding: 0.4rem 0.8rem;
+      border-radius: 6px;
+      border: 1px solid #cbd5e1;
+      font-size: 0.9rem;
+    }
+    .filters input {
+      background: #f8fafc;
+      transition: border 0.3s ease;
+    }
+    .filters input:focus {
+      border: 1px solid #2563eb;
+      outline: none;
+    }
+    .filters button {
+      background: #2563eb;
+      color: #fff;
+      border: none;
+      cursor: pointer;
+      transition: background 0.3s ease, transform 0.2s ease;
+    }
+    .filters button:hover {
+      background: #1d4ed8;
+      transform: translateY(-2px);
+    }
+    .status {
+      font-size: 0.9rem;
+      font-weight: bold;
+      margin-left: 1rem;
+      padding: 0.2rem 0.6rem;
+      border-radius: 6px;
+      color: #fff;
+    }
+    .status.connected {
+      background: #16a34a;
+    }
+    .status.disconnected {
+      background: #dc2626;
+    }
+    canvas {
+      background: #fff;
+      border-radius: 12px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+      padding: 0.6rem;
+      animation: fadeUp 1.5s ease;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    Financial Dashboard
+  </header>
+
+  <div class="container">
+    <!-- Summary Cards -->
+    <div class="cards">
+      <div class="card"><h3>Balance</h3><p id="balance"></p></div>
+      <div class="card"><h3>Profit</h3><p id="profit"></p></div>
+      <div class="card"><h3>Running</h3><p id="running"></p></div>
+      <div class="card"><h3>Markup</h3><p id="markup"></p></div>
+      <div class="card"><h3>Transactions</h3><p id="transactions"></p></div>
+      <div class="card"><h3>Trades</h3><p  id="count"></p></div>
+      <div class="card"><h3>Win Rate</h3><p id="rate"></p></div>
+    </div>
+
+    <!-- Filters -->
+    <div class="filters">
+      <label>From: <input type="text" placeholder="dd-mm-yyyy hh:mm"></label>
+      <label>To: <input type="text" placeholder="dd-mm-yyyy hh:mm"></label>
+      <button>Load</button>
+      <button>Connect</button>
+      <span id="wsStatus" class="status disconnected">Disconnected</span>
+    </div>
+
+    <!-- Bar Chart -->
+    <canvas id="barChart"></canvas>
+  </div>
+
+  <script>
+    const token = "4SPwnIvTNnbKZJU";
+    const wsStatus = document.getElementById('wsStatus');
+
+    var date_from = "2024-01-01 00:00:00";
+    var date_to = "2090-01-01 00:00:00";
+    var total_balance = 0;
+    var total_stake = 0;
+    var total_running = 0;
+    var total_profit = 0;
+
+    let chart;
+    const ctx = document.getElementById('barChart').getContext('2d');
+    let months = [];
+    let values = [];
+    let pendingMonths = [];
+
+    // Connect to WebSocket when page loads
+    const ws = new WebSocket('wss://ws.binaryws.com/websockets/v3?app_id=97811');
+    ws.onopen = () => {
+      console.log('WebSocket connected');
+      wsStatus.textContent = 'Connected';
+      wsStatus.classList.remove('disconnected');
+      wsStatus.classList.add('connected');
+
+      total_balance = 0;
+      total_stake = 0;
+      total_running = 0;
+      total_profit = 0;
+      months = [];
+      values = [];
+      pendingMonths = [];
+
+      authorize();
+    };
+    ws.onmessage = (msg) => {
+      let ms = JSON.parse(msg.data);
+      let req = ms.echo_req;
+      var req_id = req.req_id;
+
+      var error = ms.error;
+      if (error) {
+          alert(error);
+          console.log(error);
+      }
+      else {
+          if (req_id === 1111) {
+              theBalance();
+              markUp();
+              openContracts();
+              profitTable();
+              fetchLast12Months();
+          }
+          if (req_id === 1000) {
+              const b = ms.balance;
+              const balance = b.balance;
+              const currency = b.currency;
+              total_balance = total_stake + balance;
+              document.getElementById('balance').textContent = total_balance.toFixed(2) + ' ' + currency;
+          }
+          if (req_id === 1005) {
+              const con = ms.profit_table;
+              const trans = con.transactions;
+              const count = con.count;
+              var won = 0;
+              for (var i = 0; i < trans.length; i++) {
+                  var a = trans[i];
+                  var buy_price = a.buy_price;
+                  var sell_price = a.sell_price;
+                  var pro = sell_price - buy_price;
+                  total_profit += pro;
+                  if (pro > 0) {
+                      won ++;
+                  }
+              }
+              document.getElementById('profit').textContent = '$' + total_profit.toFixed(2);
+              const rate = won * 100 / count;
+              document.getElementById('rate').textContent = rate.toFixed(0) + '%';
+              document.getElementById('count').textContent = count;
+          }
+          if (req_id === 1006) {
+              const app = ms.app_markup_statistics;
+              const total = app.total_app_markup_usd;
+              const trans = app.total_transactions_count;
+              document.getElementById('markup').textContent = '$' + total.toFixed(2);
+              document.getElementById('transactions').textContent = trans;
+          }
+
+          if (req_id === 1007) {
+            const open = ms.proposal_open_contract;
+            const stake = open.buy_price;
+            const currency = open.currency;
+            const bid_price = open.bid_price;
+            total_running += bid_price;
+            total_stake += stake;
+            total_balance += stake;
+            document.getElementById('balance').textContent = total_balance.toFixed(2) + ' ' + currency;
+            document.getElementById('running').textContent = total_running.toFixed(2) + ' ' + currency;
+          }
+
+          if (req_id === 1008) {
+              const app = ms.app_markup_statistics;
+              var total = app.total_app_markup_usd;
+              const trans = app.total_transactions_count;
+              if (total) {
+                total = total.toFixed(0);
+              }
+              values.push(total);
+              requestNextMonth();
+          }
+      }
+    };
+    ws.onerror = (err) => {
+      console.error('WebSocket error:', err);
+    };
+    ws.onclose = () => {
+      console.log('WebSocket closed');
+      wsStatus.textContent = 'Disconnected';
+      wsStatus.classList.remove('connected');
+      wsStatus.classList.add('disconnected');
+    };
+
+    function authorize() {
+        const msg = JSON.stringify({
+            authorize: token,
+            req_id: 1111
+        });
+        if (ws.readyState === WebSocket.OPEN) {
+            ws.send(msg);
+        }
+    }
+
+    function theBalance() {
+        const msg = JSON.stringify({
+            balance: 1,
+            subscribe: 0,
+            req_id: 1000
+        });
+        if (ws.readyState === WebSocket.OPEN) {
+            ws.send(msg);
+        }
+    }
+
+    function profitTable() {
+        const msg = JSON.stringify({
+            profit_table: 1,
+            description: 1,
+            contract_type: ['MULTUP', 'MULTDOWN'],
+            sort: 'DESC',
+            date_from: date_from.split(" ")[0],
+            date_to: date_to.split(" ")[0],
+            limit: 500,
+            req_id: 1005,
+        });
+        if (ws.readyState === WebSocket.OPEN) {
+            ws.send(msg);
+        }
+    }
+
+    function markUp() {
+        const msg = JSON.stringify({
+            "app_markup_statistics": 1,
+            "date_from": date_from,
+            "date_to": date_to,
+            req_id: 1006,
+        });
+        if (ws.readyState === WebSocket.OPEN) {
+            ws.send(msg);
+        }
+    }
+
+    function openContracts() {
+        const msg = JSON.stringify({
+            "proposal_open_contract": 1,
+            req_id: 1007,
+        });
+        if (ws.readyState === WebSocket.OPEN) {
+            ws.send(msg);
+        }
+    }
+
+    function fetchLast12Months() {
+      const now = new Date();
+      for (let i = 11; i >= 0; i--) {
+        const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+        const from = Math.floor(d.getTime() / 1000);
+        const to = Math.floor(new Date(d.getFullYear(), d.getMonth() + 1, 0).getTime() / 1000);
+        pendingMonths.push({ d, from, to });
+      }
+      requestNextMonth();
+    }
+    function requestNextMonth() {
+      if (pendingMonths.length === 0) {
+        updateChart(months, values);
+        return;
+      }
+      const { d, from, to } = pendingMonths.shift();
+      ws.send(JSON.stringify({
+        app_markup_statistics: 1,
+        date_from: from,
+        date_to: to,
+        req_id: 1008
+      }));
+      months.push(d.toLocaleString('default', { month: 'short', year: '2-digit' }));
+        console.log(from, to)
+    }
+    
+    function updateChart(months, values) {
+      if (chart) chart.destroy();
+      chart = new Chart(ctx, {
+        type: 'bar',
+        data: {
+          labels: months,
+          datasets: [{
+            label: 'Monthly Value',
+            data: values,
+            backgroundColor: 'rgba(37, 99, 235, 0.8)',
+            borderRadius: 6,
+            hoverBackgroundColor: 'rgba(29, 78, 216, 0.9)'
+          }]
+        },
+        options: {
+          responsive: true,
+          plugins: {
+            legend: { display: false },
+            datalabels: {
+              anchor: 'end',
+              align: 'end',
+              color: '#111827',
+              font: { weight: 'bold' },
+              formatter: (val) => val
+            }
+          },
+          scales: { y: { beginAtZero: true } }
+        },
+        plugins: [ChartDataLabels]
+      });
+    }
+
+
+
+    // const ctx = document.getElementById('barChart').getContext('2d');
+    
+    // // Fixed demo data for last 12 months
+    // const months = [
+    //   'Sep-24','Oct-24','Nov-24','Dec-24','Jan-25','Feb-25','Mar-25','Apr-25','May-25','Jun-25','Jul-25','Aug-25'
+    // ];
+    // const values = [1200, 2500, 1800, 3000, 2200, 2700, 3500, 2000, 4000, 3200, 2800, 3600];
+
+    // new Chart(ctx, {
+    //   type: 'bar',
+    //   data: {
+    //     labels: months,
+    //     datasets: [{
+    //       label: 'Monthly Value',
+    //       data: values,
+    //       backgroundColor: 'rgba(37, 99, 235, 0.8)',
+    //       borderRadius: 6,
+    //       hoverBackgroundColor: 'rgba(29, 78, 216, 0.9)',
+    //     }]
+    //   },
+    //   options: {
+    //     responsive: true,
+    //     animation: {
+    //       duration: 1200,
+    //       easing: 'easeOutCubic'
+    //     },
+    //     plugins: {
+    //       legend: { display: false },
+    //       tooltip: { enabled: true },
+    //       datalabels: {
+    //         anchor: 'end',
+    //         align: 'end',
+    //         color: '#111827',
+    //         font: { weight: 'bold' },
+    //         formatter: (val) => val
+    //       }
+    //     },
+    //     scales: {
+    //       y: {
+    //         beginAtZero: true,
+    //         grid: { color: '#e5e7eb' }
+    //       },
+    //       x: {
+    //         grid: { color: '#f1f5f9' }
+    //       }
+    //     }
+    //   },
+    //   plugins: [ChartDataLabels]
+    // });
+  </script>
+</body>
+</html>
