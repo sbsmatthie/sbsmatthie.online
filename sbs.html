@@ -26,111 +26,31 @@
       animation: fadeDown 1s ease;
     }
     @keyframes fadeDown {
-      from {opacity: 0; transform: translateY(-20px);}
-      to {opacity: 1; transform: translateY(0);}
+      from {opacity: 0; transform: translateY(-20px);} to {opacity: 1; transform: translateY(0);}
     }
-    .container {
-      max-width: 1200px;
-      margin: auto;
-      padding: 1rem;
-    }
-    .cards {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
-      gap: 1rem;
-      margin-bottom: 1.5rem;
-    }
-    .card {
-      background: #fff;
-      border-radius: 12px;
-      padding: 0.8rem;
-      box-shadow: 0 3px 8px rgba(0,0,0,0.1);
-      text-align: center;
-      transition: transform 0.3s ease, box-shadow 0.3s ease;
-      animation: fadeUp 1s ease;
-    }
-    .card:hover {
-      transform: translateY(-4px);
-      box-shadow: 0 6px 16px rgba(0,0,0,0.15);
-    }
-    .card h3 {
-      margin: 0;
-      color: #2563eb;
-      font-size: 1rem;
-    }
-    .card p {
-      margin: 0.4rem 0 0;
-      font-size: 1.1rem;
-      font-weight: bold;
-      color: #111827;
-    }
-    @keyframes fadeUp {
-      from {opacity: 0; transform: translateY(20px);}
-      to {opacity: 1; transform: translateY(0);}
-    }
-    .filters {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 0.6rem;
-      margin-bottom: 1.5rem;
-      align-items: center;
-      animation: fadeUp 1.2s ease;
-    }
-    .filters input, .filters button {
-      padding: 0.4rem 0.8rem;
-      border-radius: 6px;
-      border: 1px solid #cbd5e1;
-      font-size: 0.9rem;
-    }
-    .filters input {
-      background: #f8fafc;
-      transition: border 0.3s ease;
-    }
-    .filters input:focus {
-      border: 1px solid #2563eb;
-      outline: none;
-    }
-    .filters button {
-      background: #2563eb;
-      color: #fff;
-      border: none;
-      cursor: pointer;
-      transition: background 0.3s ease, transform 0.2s ease;
-    }
-    .filters button:hover {
-      background: #1d4ed8;
-      transform: translateY(-2px);
-    }
-    .status {
-      font-size: 0.9rem;
-      font-weight: bold;
-      margin-left: 1rem;
-      padding: 0.2rem 0.6rem;
-      border-radius: 6px;
-      color: #fff;
-    }
-    .status.connected {
-      background: #16a34a;
-    }
-    .status.disconnected {
-      background: #dc2626;
-    }
-    canvas {
-      background: #fff;
-      border-radius: 12px;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-      padding: 0.6rem;
-      animation: fadeUp 1.5s ease;
-    }
+    .container { max-width: 1200px; margin: auto; padding: 1rem; }
+    .cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 1rem; margin-bottom: 1.5rem; }
+    .card { background: #fff; border-radius: 12px; padding: 0.8rem; box-shadow: 0 3px 8px rgba(0,0,0,0.1); text-align: center; transition: transform 0.3s ease, box-shadow 0.3s ease; animation: fadeUp 1s ease; }
+    .card:hover { transform: translateY(-4px); box-shadow: 0 6px 16px rgba(0,0,0,0.15); }
+    .card h3 { margin: 0; color: #2563eb; font-size: 1rem; }
+    .card p { margin: 0.4rem 0 0; font-size: 1.1rem; font-weight: bold; color: #111827; }
+    @keyframes fadeUp { from {opacity: 0; transform: translateY(20px);} to {opacity: 1; transform: translateY(0);} }
+    .filters { display: flex; flex-wrap: wrap; gap: 0.6rem; margin-bottom: 1.5rem; align-items: center; animation: fadeUp 1.2s ease; }
+    .filters input, .filters button { padding: 0.4rem 0.8rem; border-radius: 6px; border: 1px solid #cbd5e1; font-size: 0.9rem; }
+    .filters input { background: #f8fafc; transition: border 0.3s ease; }
+    .filters input:focus { border: 1px solid #2563eb; outline: none; }
+    .filters button { background: #2563eb; color: #fff; border: none; cursor: pointer; transition: background 0.3s ease, transform 0.2s ease; }
+    .filters button:hover { background: #1d4ed8; transform: translateY(-2px); }
+    .status { font-size: 0.9rem; font-weight: bold; margin-left: 1rem; padding: 0.2rem 0.6rem; border-radius: 6px; color: #fff; }
+    .status.connected { background: #16a34a; }
+    .status.disconnected { background: #dc2626; }
+    canvas { background: #fff; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); padding: 0.6rem; animation: fadeUp 1.5s ease; }
   </style>
 </head>
 <body>
-  <header>
-    SBS
-  </header>
+  <header>Financial Dashboard</header>
 
   <div class="container">
-    <!-- Summary Cards -->
     <div class="cards">
       <div class="card"><h3>Balance</h3><p id="balance"></p></div>
       <div class="card"><h3>Profit</h3><p id="profit"></p></div>
@@ -141,26 +61,28 @@
       <div class="card"><h3>Win Rate</h3><p id="rate"></p></div>
     </div>
 
-    <!-- Filters -->
     <div class="filters">
-      <label>From: <input type="text" placeholder="dd-mm-yyyy hh:mm"></label>
-      <label>To: <input type="text" placeholder="dd-mm-yyyy hh:mm"></label>
+      <label>From: <input id="fromInput" type="text" placeholder="dd-mm-yyyy hh:mm"></label>
+      <label>To: <input id="toInput" type="text" placeholder="dd-mm-yyyy hh:mm"></label>
       <button id="loadBtn">Load</button>
       <button id="connectBtn">Connect</button>
       <span id="wsStatus" class="status disconnected">Disconnected</span>
     </div>
 
-    <!-- Bar Chart -->
     <canvas id="barChart"></canvas>
   </div>
 
   <script>
     const token = "4SPwnIvTNnbKZJU";
+    const TZ = 'Africa/Harare'; // fixed timezone (UTC+2, no DST)
+
     const wsStatus = document.getElementById('wsStatus');
     const connectBtn = document.getElementById('connectBtn');
 
+    // Use Zimbabwean local time strings (yyyy-mm-dd hh:mm)
     var date_from = "2024-01-01 00:00:00";
-    var date_to = "2090-01-01 00:00:00";
+    var date_to   = "2090-01-01 00:00:00";
+
     var total_balance = 0;
     var total_stake = 0;
     var total_running = 0;
@@ -200,15 +122,14 @@
 
       ws.onmessage = (msg) => {
         let ms = JSON.parse(msg.data);
-        let req = ms.echo_req;
+        let req = ms.echo_req || {};
         var req_id = req.req_id;
 
         var error = ms.error;
         if (error) {
-            alert(error);
-            console.log(error);
-        }
-        else {
+            alert(error.message || JSON.stringify(error));
+            console.log(ms);
+        } else {
             if (req_id === 1111) {
                 theBalance();
                 markUp();
@@ -225,8 +146,8 @@
             }
             if (req_id === 1005) {
                 const con = ms.profit_table;
-                const trans = con.transactions;
-                const count = con.count;
+                const trans = con.transactions || [];
+                const count = con.count || 0;
                 var won = 0;
                 for (var i = 0; i < trans.length; i++) {
                     var a = trans[i];
@@ -234,51 +155,41 @@
                     var sell_price = a.sell_price;
                     var pro = sell_price - buy_price;
                     total_profit += pro;
-                    if (pro > 0) {
-                        won ++;
-                    }
+                    if (pro > 0) { won ++; }
                 }
                 document.getElementById('profit').textContent = '$' + total_profit.toFixed(2);
-                const rate = won * 100 / count;
+                const rate = count ? (won * 100 / count) : 0;
                 document.getElementById('rate').textContent = rate.toFixed(0) + '%';
                 document.getElementById('count').textContent = count;
             }
             if (req_id === 1006) {
-                const app = ms.app_markup_statistics;
-                const total = app.total_app_markup_usd;
-                const trans = app.total_transactions_count;
-                document.getElementById('markup').textContent = '$' + total.toFixed(2);
+                const app = ms.app_markup_statistics || {};
+                const total = app.total_app_markup_usd || 0;
+                const trans = app.total_transactions_count || 0;
+                document.getElementById('markup').textContent = '$' + Number(total).toFixed(2);
                 document.getElementById('transactions').textContent = trans;
             }
-
             if (req_id === 1007) {
-              const open = ms.proposal_open_contract;
-              const stake = open.buy_price;
-              const currency = open.currency;
-              const bid_price = open.bid_price;
+              const open = ms.proposal_open_contract || {};
+              const stake = open.buy_price || 0;
+              const currency = open.currency || '';
+              const bid_price = open.bid_price || 0;
               total_running += bid_price;
               total_stake += stake;
               total_balance += stake;
               document.getElementById('balance').textContent = total_balance.toFixed(2) + ' ' + currency;
               document.getElementById('running').textContent = total_running.toFixed(2) + ' ' + currency;
             }
-
             if (req_id === 1008) {
-                const app = ms.app_markup_statistics;
-                var total = app.total_app_markup_usd;
-                const trans = app.total_transactions_count;
-                if (total) {
-                  total = total.toFixed(0);
-                }
-                values.push(total);
+                const app = ms.app_markup_statistics || {};
+                var total = app.total_app_markup_usd || 0;
+                values.push(Number(total).toFixed(0));
                 requestNextMonth();
             }
         }
       };
 
-      ws.onerror = (err) => {
-        console.error('WebSocket error:', err);
-      };
+      ws.onerror = (err) => { console.error('WebSocket error:', err); };
       ws.onclose = () => {
         console.log('WebSocket closed');
         wsStatus.textContent = 'Disconnected';
@@ -291,24 +202,13 @@
     connectBtn.addEventListener('click', connectWS);
 
     function authorize() {
-        const msg = JSON.stringify({
-            authorize: token,
-            req_id: 1111
-        });
-        if (ws.readyState === WebSocket.OPEN) {
-            ws.send(msg);
-        }
+        const msg = JSON.stringify({ authorize: token, req_id: 1111 });
+        if (ws.readyState === WebSocket.OPEN) { ws.send(msg); }
     }
 
     function theBalance() {
-        const msg = JSON.stringify({
-            balance: 1,
-            subscribe: 0,
-            req_id: 1000
-        });
-        if (ws.readyState === WebSocket.OPEN) {
-            ws.send(msg);
-        }
+        const msg = JSON.stringify({ balance: 1, subscribe: 0, req_id: 1000 });
+        if (ws.readyState === WebSocket.OPEN) { ws.send(msg); }
     }
 
     function profitTable() {
@@ -318,62 +218,67 @@
             contract_type: ['MULTUP', 'MULTDOWN'],
             sort: 'DESC',
             date_from: date_from.split(" ")[0],
-            date_to: date_to.split(" ")[0],
+            date_to: date_to.split(" ")[0], 
             limit: 500,
             req_id: 1005,
         });
-        if (ws.readyState === WebSocket.OPEN) {
-            ws.send(msg);
-        }
+        if (ws.readyState === WebSocket.OPEN) { ws.send(msg); }
     }
 
     function markUp() {
         const msg = JSON.stringify({
-            "app_markup_statistics": 1,
-            "date_from": date_from,
-            "date_to": date_to,
+            app_markup_statistics: 1,
+            date_from: date_from, // Zimbabwe time string
+            date_to: date_to,     // Zimbabwe time string
             req_id: 1006,
         });
-        if (ws.readyState === WebSocket.OPEN) {
-            ws.send(msg);
-        }
+        if (ws.readyState === WebSocket.OPEN) { ws.send(msg); }
     }
 
     function openContracts() {
-        const msg = JSON.stringify({
-            "proposal_open_contract": 1,
-            req_id: 1007,
-        });
-        if (ws.readyState === WebSocket.OPEN) {
-            ws.send(msg);
-        }
+        const msg = JSON.stringify({ proposal_open_contract: 1, req_id: 1007 });
+        if (ws.readyState === WebSocket.OPEN) { ws.send(msg); }
     }
 
-    function fetchLast12Months() {
-      const now = new Date();
-      for (let i = 11; i >= 0; i--) {
-        const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
-        const from = Math.floor(d.getTime() / 1000);
-        const to = Math.floor(new Date(d.getFullYear(), d.getMonth() + 1, 0).getTime() / 1000);
-        pendingMonths.push({ d, from, to });
+    // ---------- Zimbabwe-time monthly builder ----------
+    const MONTHS_SHORT = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+    function pad2(n){ return n < 10 ? '0' + n : '' + n; }
+    function addMonths(year, month1to12, delta){
+      let m0 = month1to12 - 1 + delta; // 0..11 space
+      let y = year + Math.floor(m0 / 12);
+      let m = (m0 % 12 + 12) % 12; // normalize to 0..11
+      return { y, m: m + 1 };
+    }
+    function getHarareYearMonthNow(){
+      const parts = new Intl.DateTimeFormat('en-GB', { timeZone: TZ, year: 'numeric', month: '2-digit' }).formatToParts(new Date());
+      const y = parseInt(parts.find(p => p.type === 'year').value, 10);
+      const m = parseInt(parts.find(p => p.type === 'month').value, 10);
+      return { y, m };
+    }
+
+    function fetchLast12Months(){
+      const nowHM = getHarareYearMonthNow();
+      for(let i = 11; i >= 0; i--){
+        const ym = addMonths(nowHM.y, nowHM.m, -i);
+        const next = addMonths(ym.y, ym.m, 1);
+        const from = `${ym.y}-${pad2(ym.m)}-01 00:00:00`;      // Zimbabwe local start
+        const to   = `${next.y}-${pad2(next.m)}-01 00:00:00`;  // Zimbabwe local end (first of next month)
+        pendingMonths.push({ label: `${MONTHS_SHORT[ym.m-1]} ${String(ym.y).slice(-2)}`, from, to });
       }
       requestNextMonth();
     }
-    function requestNextMonth() {
-      if (pendingMonths.length === 0) {
+
+    function requestNextMonth(){
+      if (pendingMonths.length === 0){
         updateChart(months, values);
         return;
       }
-      const { d, from, to } = pendingMonths.shift();
-      ws.send(JSON.stringify({
-        app_markup_statistics: 1,
-        date_from: from,
-        date_to: to,
-        req_id: 1008
-      }));
-      months.push(d.toLocaleString('default', { month: 'short', year: '2-digit' }));
+      const { label, from, to } = pendingMonths.shift();
+      ws.send(JSON.stringify({ app_markup_statistics: 1, date_from: from, date_to: to, req_id: 1008 }));
+      months.push(label);
     }
-    
+    // ---------------------------------------------------
+
     function updateChart(months, values) {
       if (chart) chart.destroy();
       chart = new Chart(ctx, {
@@ -392,17 +297,9 @@
           responsive: true,
           plugins: {
             legend: { display: false },
-            datalabels: {
-              anchor: 'end',
-              align: 'end',
-              color: '#111827',
-              font: { weight: 'bold' },
-              formatter: (val) => val
-            }
+            datalabels: { anchor: 'end', align: 'end', color: '#111827', font: { weight: 'bold' }, formatter: (val) => val }
           },
-          scales: {
-            y: { display: false, beginAtZero: true }
-          }
+          scales: { y: { display: false, beginAtZero: true } }
         },
         plugins: [ChartDataLabels]
       });
